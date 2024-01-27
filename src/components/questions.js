@@ -45,7 +45,7 @@ export const jsQuiz = {
           "None of the above",
         ],
         type: "MCQs",
-        correctAnswer: "JavaScript compiler",
+        correctAnswer: "JavaScript transpiler",
       },
     ],
 };
