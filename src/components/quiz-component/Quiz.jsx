@@ -101,7 +101,7 @@ const Quiz = ({ questions }) => {
     <div className="quiz-container">
       {!showResult ? (
         <>
-          {showAnswerTimer && <AnswerTimer duration={5} onTimeUp={onTimeUp} />}
+          {showAnswerTimer && <AnswerTimer duration={10} onTimeUp={onTimeUp} />}
           <span className="active-question-no">{currentQuestion + 1}</span>
           <span className="total-question">/{questions.length}</span>
 
