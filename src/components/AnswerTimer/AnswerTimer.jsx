@@ -1,0 +1,2 @@
+@import "./AnswerTimer.scss";
+
