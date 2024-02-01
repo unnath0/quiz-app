@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { resultInitialState } from "../results";
+import AnswerTimer from "../AnswerTimer/AnswerTimer";
 import "./Quiz.scss"
 
 const Quiz = ({ questions }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answerIndex, setAnswerIndex] = useState(null);
-  const [answer, setAnswer] = useState(null);
+  const [answer, setAnswer] = useState(false);
+  const [inputAnswer, setInputAnswer] = useState('');
   const [result, setResult] = useState(resultInitialState);
   const [showResult, setShowResult] = useState(false);
+  const [showAnswerTimer, setShowAnswerTimer] = useState(true);
 
-  const { question, choices, correctAnswer } = questions[currentQuestion];
+  const { question, choices, correctAnswer, type } = questions[currentQuestion];
 
   function onAnswerClick(answer, index) {
     setAnswerIndex(index);
@@ -21,12 +24,13 @@ const Quiz = ({ questions }) => {
     }
   }
 
-  function onClickNext() {
+  function onClickNext(finalAnswer) {
     // reset the answer index
     setAnswerIndex(null);
+    setShowAnswerTimer(false); // hide the progress when next is clicked
     // update the results while considering the prev value
     setResult((prevstate) =>
-      answer
+      finalAnswer
         ? {
             ...prevstate,
             score: prevstate.score + 1,
@@ -45,6 +49,12 @@ const Quiz = ({ questions }) => {
       setCurrentQuestion(0);
       setShowResult(true);
     }
+
+    // make the progress visible again
+    setTimeout(() => {
+     setShowAnswerTimer(true); 
+    });
+    setInputAnswer('');
   }
 
   function onTryAgain () {
@@ -52,28 +62,54 @@ const Quiz = ({ questions }) => {
     setShowResult(false);
   }
 
+  function onTimeUp () {
+    onClickNext(false);
+  }
+
+  function onInputChange (evt) {
+    setInputAnswer(evt.target.value);
+
+    if (evt.target.value === correctAnswer) {
+      setAnswer(true);
+    } else {
+      setAnswer(false);
+    }
+  }
+
+  function getAnswerUI () {
+
+    if (type === 'FIB') {
+      return <input type="text" value={inputAnswer} onChange={onInputChange} />;
+    }
+
+    return (
+      <ul>
+      {choices.map((answer, index) => (
+        <li
+          onClick={() => onAnswerClick(answer, index)}
+          key={answer} // this is just so that react doesn't re-render the entire page, and only re-renders this item
+          className={answerIndex === index ? "selected-answer" : null}
+        >
+          {answer}
+        </li>
+      ))}
+      </ul>
+    );
+  }
+
   return (
     <div className="quiz-container">
       {!showResult ? (
         <>
+          {showAnswerTimer && <AnswerTimer duration={5} onTimeUp={onTimeUp} />}
           <span className="active-question-no">{currentQuestion + 1}</span>
           <span className="total-question">/{questions.length}</span>
 
           <h2>{question}</h2>
-          <ul>
-            {choices.map((answer, index) => (
-              <li
-                onClick={() => onAnswerClick(answer, index)}
-                key={answer} // this is just so that react doesn't re-render the entire page, and only re-renders this item
-                className={answerIndex === index ? "selected-answer" : null}
-              >
-                {answer}
-              </li>
-            ))}
-          </ul>
+          {getAnswerUI()}
 
           <div className="footer">
-            <button onClick={onClickNext} disabled={answerIndex === null}>
+            <button onClick={() => onClickNext(answer)} disabled={answerIndex === null && !inputAnswer}>
               {currentQuestion === questions.length - 1 ? "Finish" : "Next"}
             </button>
           </div>
